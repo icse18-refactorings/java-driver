@@ -265,19 +265,25 @@ class RequestHandler {
         }
 
         void sendRequest() {
+            sendRequest(true);
+        }
+
+        boolean sendRequest(boolean reportNoMoreHosts) {
             try {
                 Host host;
                 while (!isDone.get() && (host = queryPlan.next()) != null && !queryStateRef.get().isCancelled()) {
                     if(logger.isTraceEnabled())
                         logger.trace("[{}] Querying node {}", id, host);
                     if (query(host))
-                        return;
+                        return true;
                 }
-                reportNoMoreHosts(this);
+                if(reportNoMoreHosts)
+                    reportNoMoreHosts(this);
             } catch (Exception e) {
                 // Shouldn't happen really, but if ever the loadbalancing policy returned iterator throws, we don't want to block.
                 setFinalException(null, new DriverInternalError("An unexpected error happened while sending requests", e));
             }
+            return false;
         }
 
         private boolean query(final Host host) {
@@ -357,6 +363,10 @@ class RequestHandler {
         }
 
         private void retry(final boolean retryCurrent, ConsistencyLevel newConsistencyLevel) {
+            retry(retryCurrent, newConsistencyLevel, null, null);
+        }
+
+        private void retry(final boolean retryCurrent, ConsistencyLevel newConsistencyLevel, final Connection connection, final Message.Response response) {
             final Host h = current;
             this.retryConsistencyLevel = newConsistencyLevel;
 
@@ -370,8 +380,17 @@ class RequestHandler {
                         if (retryCurrent) {
                             if (query(h))
                                 return;
+                            sendRequest();
+                        } else if(connection != null && response != null) {
+                            // If a connection and response were provided, propagate it as the actual response if no
+                            // hosts were found to send the request other then the hosts already used.
+                            boolean requestSent = sendRequest(false);
+                            if(!requestSent) {
+                                setFinalResult(connection, response);
+                            }
+                        } else {
+                            sendRequest();
                         }
-                        sendRequest();
                     } catch (Exception e) {
                         setFinalException(null, new DriverInternalError("Unexpected exception while retrying query", e));
                     }
@@ -579,7 +598,7 @@ class RequestHandler {
                                         logger.debug("Doing retry {} for query {} at consistency {}", retriesByPolicy, statement, retry.getRetryConsistencyLevel());
                                     if (metricsEnabled())
                                         metrics().getErrorMetrics().getRetries().inc();
-                                    retry(retry.isRetryCurrent(), retry.getRetryConsistencyLevel());
+                                    retry(retry.isRetryCurrent(), retry.getRetryConsistencyLevel(), connection, response);
                                     break;
                                 case RETHROW:
                                     setFinalResult(connection, response);
