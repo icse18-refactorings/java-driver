@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.1.7.1
+
+- [improvement] Allow accessor methods with less parameters in case
+  named bind markers are repeated (JAVA-835)
+
 ### 2.1.7
 
 - [improvement] Improve QueryBuilder API for SELECT DISTINCT (JAVA-475)
