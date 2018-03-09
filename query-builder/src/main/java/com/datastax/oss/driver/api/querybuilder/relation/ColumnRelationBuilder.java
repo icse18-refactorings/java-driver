@@ -16,6 +16,7 @@
 package com.datastax.oss.driver.api.querybuilder.relation;
 
 import com.datastax.oss.driver.api.querybuilder.BindMarker;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl;
 import java.util.Arrays;
 
 public interface ColumnRelationBuilder extends ArithmeticRelationBuilder {
@@ -43,7 +44,7 @@ public interface ColumnRelationBuilder extends ArithmeticRelationBuilder {
    * IN (term1, term2...)}.
    */
   default Relation in(Iterable<Term> alternatives) {
-    return build("IN", Term.tuple(alternatives));
+    return build("IN", QueryBuilderDsl.tuple(alternatives));
   }
 
   /** Var-arg equivalent of {@link #in(Iterable)} . */

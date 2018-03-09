@@ -16,6 +16,7 @@
 package com.datastax.oss.driver.api.querybuilder.select;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl;
 import java.util.Arrays;
 
 /**
@@ -25,8 +26,15 @@ import java.util.Arrays;
 public interface CanAddSelector {
 
   /**
-   * Adds a selector. You probably want to use one of the convenience shortcuts instead: {@link
-   * #all()}, {@link #countAll()}, {@link #column(CqlIdentifier)} etc.
+   * Adds a selector.
+   *
+   * <p>To create the argument, use one of the {@code getXxx} factory methods in {@link
+   * QueryBuilderDsl}, for example {@link QueryBuilderDsl#getColumn(CqlIdentifier) getColumn}. This
+   * type also provides shortcuts to create and add the selector in one call, for example {@link
+   * #column(CqlIdentifier)} for {@code selector(getColumn(...))}.
+   *
+   * <p>If you add multiple selectors as once, consider {@link #selectors(Iterable)} as a more
+   * efficient alternative.
    */
   Select selector(Selector selector);
 
@@ -36,10 +44,12 @@ public interface CanAddSelector {
    * <p>This is slightly more efficient than adding the selectors one by one (since the underlying
    * implementation of this object is immutable).
    *
-   * <p>Use the static factory methods in {@link Selector} to create the arguments.
+   * <p>To create the arguments, use one of the {@code getXxx} factory methods in {@link
+   * QueryBuilderDsl}, for example {@link QueryBuilderDsl#getColumn(CqlIdentifier) getColumn}.
    *
-   * @throws IllegalArgumentException if one of the selectors is {@link Selector#all()} ({@code *}
-   *     can only be used on its own).
+   * @throws IllegalArgumentException if one of the selectors is {@link QueryBuilderDsl#getAll()}
+   *     ({@code *} can only be used on its own).
+   * @see #selector(Selector)
    */
   Select selectors(Iterable<Selector> additionalSelectors);
 
@@ -55,20 +65,20 @@ public interface CanAddSelector {
    * added later, it will cancel this one.
    */
   default Select all() {
-    return selector(Selector.all());
+    return selector(QueryBuilderDsl.getAll());
   }
 
   /** Selects the count of all returned rows, as in {@code SELECT count(*)}. */
   default Select countAll() {
-    return selector(Selector.countAll());
+    return selector(QueryBuilderDsl.getCountAll());
   }
 
   /** Selects a particular column by its CQL identifier. */
   default Select column(CqlIdentifier columnId) {
-    return selector(Selector.column(columnId));
+    return selector(QueryBuilderDsl.getColumn(columnId));
   }
 
-  /** Shortcut for {@link #column(CqlIdentifier) column(CqlIdentifier.fromCql(columnName))} */
+  /** Shortcut for {@link #column(CqlIdentifier) getColumn(CqlIdentifier.fromCql(columnName))} */
   default Select column(String columnName) {
     return column(CqlIdentifier.fromCql(columnName));
   }
@@ -76,13 +86,13 @@ public interface CanAddSelector {
   /**
    * Selects an arbitrary expression expressed as a raw string.
    *
-   * <p>The contents be appended to the query as-is, without any syntax checking or escaping. This
-   * method should be used with caution, as it's possible to generate invalid CQL that will fail at
-   * execution time; on the other hand, it can be used as an "escape hatch" to handle edge cases
-   * that are not covered by the query builder.
+   * <p>The contents will be appended to the query as-is, without any syntax checking or escaping.
+   * This method should be used with caution, as it's possible to generate invalid CQL that will
+   * fail at execution time; on the other hand, it can be used as a workaround to handle new CQL
+   * features that are not yet covered by the query builder.
    */
   default Select raw(String rawExpression) {
-    return selector(Selector.raw(rawExpression));
+    return selector(QueryBuilderDsl.getRaw(rawExpression));
   }
 
   /**

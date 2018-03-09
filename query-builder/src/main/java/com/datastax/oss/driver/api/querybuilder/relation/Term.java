@@ -15,30 +15,10 @@
  */
 package com.datastax.oss.driver.api.querybuilder.relation;
 
-import com.datastax.oss.driver.internal.querybuilder.relation.RawTerm;
-import com.datastax.oss.driver.internal.querybuilder.relation.TupleTerm;
-import java.util.Arrays;
+import com.datastax.oss.driver.api.querybuilder.CqlSnippet;
 
-public interface Term {
-
-  // TODO add remaining terms (decide how far we go without having to resort to rawTerm)
-  // TODO arithmetics (termAddition, termMultiplication...)
-  // TODO function calls (function, 2nd branch of simpleTerm)
-  // TODO casts (3rd branch of simpleTerm)
-  // TODO literals (value), or is rawTerm(codec.format()) good enough? -- edge case really
-
-  static Term rawTerm(String raw) {
-    return new RawTerm(raw);
-  }
-
-  static Term tuple(Iterable<? extends Term> components) {
-    return new TupleTerm(components);
-  }
-
-  /** Var-arg equivalent of {@link #tuple(Iterable)}. */
-  static Term tuple(Term... components) {
-    return tuple(Arrays.asList(components));
-  }
-
-  String asCql(boolean pretty);
-}
+/**
+ * A term in the right-hand side of a relation.
+ * <!-- TODO is this the only place where it's used? -->
+ */
+public interface Term extends CqlSnippet {}

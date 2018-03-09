@@ -15,7 +15,9 @@
  */
 package com.datastax.oss.driver.api.querybuilder.select;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.querybuilder.BindMarker;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl;
 import com.datastax.oss.driver.api.querybuilder.relation.Relation;
 import java.util.Arrays;
 
@@ -32,7 +34,11 @@ public interface CanAddClause {
   /**
    * Adds a relation in the WHERE clause. All relations are logically joined with AND.
    *
-   * <p>Use the static factory methods in {@link Relation} to create the argument.
+   * <p>To create the argument, use one of the {@code isXxx} factory methods in {@link
+   * QueryBuilderDsl}, for example {@link QueryBuilderDsl#isColumn(CqlIdentifier) isColumn}.
+   *
+   * <p>If you add multiple selectors as once, consider {@link #where(Iterable)} as a more efficient
+   * alternative.
    */
   Select where(Relation relation);
 
@@ -42,7 +48,10 @@ public interface CanAddClause {
    * <p>This is slightly more efficient than adding the relations one by one (since the underlying
    * implementation of this object is immutable).
    *
-   * <p>Use the static factory methods in {@link Relation} to create the arguments.
+   * <p>To create the argument, use one of the {@code isXxx} factory methods in {@link
+   * QueryBuilderDsl}, for example {@link QueryBuilderDsl#isColumn(CqlIdentifier) isColumn}.
+   *
+   * @see #where(Relation)
    */
   Select where(Iterable<Relation> additionalRelations);
 
@@ -62,7 +71,8 @@ public interface CanAddClause {
   /**
    * Adds a LIMIT clause to this query with a bound value.
    *
-   * <p>Use one of the static factory method in {@link BindMarker} to create the argument.
+   * <p>To create the argument, use one of the factory methods in {@link QueryBuilderDsl}, for
+   * example {@link QueryBuilderDsl#bindMarker() bindMarker()}.
    *
    * <p>If this method or {@link #limit(int)} is called multiple times, the last value is used.
    */

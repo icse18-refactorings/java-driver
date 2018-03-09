@@ -16,19 +16,19 @@
 package com.datastax.oss.driver.api.querybuilder.select;
 
 import static com.datastax.oss.driver.api.querybuilder.Assertions.assertThat;
-import static com.datastax.oss.driver.api.querybuilder.BindMarker.bindMarker;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.bindMarker;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getAll;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getColumn;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getRaw;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isColumn;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isColumnComponent;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isCustomIndex;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isRaw;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isToken;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isTuple;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.raw;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.selectFrom;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isColumn;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isColumnComponent;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isCustomIndex;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isRaw;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isToken;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isTuple;
-import static com.datastax.oss.driver.api.querybuilder.relation.Term.rawTerm;
-import static com.datastax.oss.driver.api.querybuilder.relation.Term.tuple;
-import static com.datastax.oss.driver.api.querybuilder.select.Selector.all;
-import static com.datastax.oss.driver.api.querybuilder.select.Selector.column;
-import static com.datastax.oss.driver.api.querybuilder.select.Selector.raw;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.tuple;
 
 import org.junit.Test;
 
@@ -44,9 +44,9 @@ public class SelectTest {
     assertThat(selectFrom("foo").column("bar").column("baz"))
         .hasUglyCql("SELECT \"bar\", \"baz\" FROM \"foo\"");
 
-    assertThat(selectFrom("foo").selectors(column("bar"), column("baz")))
+    assertThat(selectFrom("foo").selectors(getColumn("bar"), getColumn("baz")))
         .hasUglyCql("SELECT \"bar\", \"baz\" FROM \"foo\"");
-    assertThat(selectFrom("foo").selectors(column("bar"), raw("baz")))
+    assertThat(selectFrom("foo").selectors(getColumn("bar"), getRaw("baz")))
         .hasUglyCql("SELECT \"bar\", baz FROM \"foo\"");
   }
 
@@ -63,14 +63,14 @@ public class SelectTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void should_fail_if_selector_list_contains_star_selector() {
-    selectFrom("foo").selectors(column("bar"), all(), raw("baz"));
+    selectFrom("foo").selectors(getColumn("bar"), getAll(), getRaw("baz"));
   }
 
   @Test
   public void should_alias_selectors() {
     assertThat(selectFrom("foo").column("bar").as("baz"))
         .hasUglyCql("SELECT \"bar\" AS \"baz\" FROM \"foo\"");
-    assertThat(selectFrom("foo").selectors(column("bar").as("c1"), column("baz").as("c2")))
+    assertThat(selectFrom("foo").selectors(getColumn("bar").as("c1"), getColumn("baz").as("c2")))
         .hasUglyCql("SELECT \"bar\" AS \"c1\", \"baz\" AS \"c2\" FROM \"foo\"");
   }
 
@@ -125,7 +125,7 @@ public class SelectTest {
                 .all()
                 .where(
                     isColumn("id").eq(bindMarker()),
-                    isColumnComponent("user", rawTerm("'name'")).eq(bindMarker())))
+                    isColumnComponent("user", raw("'name'")).eq(bindMarker())))
         .hasUglyCql("SELECT * FROM \"foo\" WHERE \"id\" = ? AND \"user\"['name'] = ?");
   }
 
@@ -147,7 +147,7 @@ public class SelectTest {
             selectFrom("foo")
                 .all()
                 .where(isColumn("k").eq(bindMarker()))
-                .where(isTuple("c1", "c2", "c3").in(tuple(bindMarker(), rawTerm("(4,5,6)")))))
+                .where(isTuple("c1", "c2", "c3").in(tuple(bindMarker(), raw("(4,5,6)")))))
         .hasUglyCql(
             "SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") IN (?,(4,5,6))");
     assertThat(
@@ -180,7 +180,7 @@ public class SelectTest {
             selectFrom("foo")
                 .all()
                 .where(isColumn("k").eq(bindMarker()))
-                .where(isTuple("c1", "c2", "c3").gte(rawTerm("(1,2,3)"))))
+                .where(isTuple("c1", "c2", "c3").gte(raw("(1,2,3)"))))
         .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") >= (1,2,3)");
   }
 
@@ -190,7 +190,7 @@ public class SelectTest {
             selectFrom("foo")
                 .all()
                 .where(isColumn("k").eq(bindMarker()))
-                .where(isCustomIndex("my_index", rawTerm("'custom expression'"))))
+                .where(isCustomIndex("my_index", raw("'custom expression'"))))
         .hasUglyCql(
             "SELECT * FROM \"foo\" WHERE \"k\" = ? AND expr(\"my_index\",'custom expression')");
   }

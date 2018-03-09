@@ -16,6 +16,7 @@
 package com.datastax.oss.driver.api.querybuilder.relation;
 
 import com.datastax.oss.driver.api.querybuilder.BindMarker;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl;
 
 public interface TupleRelationBuilder extends ArithmeticRelationBuilder {
 
@@ -30,7 +31,7 @@ public interface TupleRelationBuilder extends ArithmeticRelationBuilder {
    * isTuple("c1", "c2", "c3").in(bindMarker())
    * // WHERE (c1,c2,c3) IN ?
    * }</pre>
-   *   <li>each alternative tuple as a variable, using {@link Term#tuple(Iterable)}:
+   *   <li>each alternative tuple as a variable, using {@link QueryBuilderDsl#tuple(Iterable)}:
    *       <pre>{@code
    * isTuple("c1", "c2", "c3").in(tuple(bindMarker(), bindMarker())
    * // WHERE (c1,c2,c3) IN (?,?)
@@ -49,7 +50,7 @@ public interface TupleRelationBuilder extends ArithmeticRelationBuilder {
    * Bind markers may be mixed with literal terms:
    *
    * <pre>{@code
-   * isTuple("c1", "c2", "c3").in(tuple(bindMarker(), rawTerm("(4,5,6)")))
+   * isTuple("c1", "c2", "c3").in(tuple(bindMarker(), raw("(4,5,6)")))
    * // WHERE (c1,c2,c3) IN (?,(4,5,6))
    * }</pre>
    */

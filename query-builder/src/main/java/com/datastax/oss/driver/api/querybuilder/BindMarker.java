@@ -15,24 +15,6 @@
  */
 package com.datastax.oss.driver.api.querybuilder;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.querybuilder.relation.Term;
-import com.datastax.oss.driver.internal.querybuilder.select.DefaultBindMarker;
 
-public interface BindMarker extends Term {
-
-  /** Creates an anonymous bind marker, which appears as {@code ?} in the generated CQL. */
-  static BindMarker bindMarker() {
-    return bindMarker((CqlIdentifier) null);
-  }
-
-  /** Creates a named bind marker, which appears as {@code :id} in the generated CQL. */
-  static BindMarker bindMarker(CqlIdentifier id) {
-    return new DefaultBindMarker(id);
-  }
-
-  /** Shortcut for {@link #bindMarker(CqlIdentifier) bindMarker(CqlIdentifier.fromCql(name))} */
-  static BindMarker bindMarker(String name) {
-    return bindMarker(CqlIdentifier.fromCql(name));
-  }
-}
+public interface BindMarker extends Term {}

@@ -16,55 +16,10 @@
 package com.datastax.oss.driver.api.querybuilder.select;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.internal.querybuilder.select.AllSelector;
-import com.datastax.oss.driver.internal.querybuilder.select.ColumnSelector;
-import com.datastax.oss.driver.internal.querybuilder.select.CountAllSelector;
-import com.datastax.oss.driver.internal.querybuilder.select.RawSelector;
+import com.datastax.oss.driver.api.querybuilder.CqlSnippet;
 
 /** A "column" in a SELECT query. */
-public interface Selector {
-
-  /** Selects all columns, as in {@code SELECT *}. */
-  static Selector all() {
-    return AllSelector.INSTANCE;
-  }
-
-  /** Selects the count of all returned rows, as in {@code SELECT count(*)}. */
-  static Selector countAll() {
-    return new CountAllSelector();
-  }
-
-  /** Selects a particular column by its CQL identifier. */
-  static Selector column(CqlIdentifier columnId) {
-    return new ColumnSelector(columnId);
-  }
-
-  /** Shortcut for {@link #column(CqlIdentifier) column(CqlIdentifier.fromCql(columnName))} */
-  static Selector column(String columnName) {
-    return column(CqlIdentifier.fromCql(columnName));
-  }
-
-  // TODO add remaining selectors (decide how far we go without having to resort to raw())
-  // TODO arithmetic expressions (selectionAddition, selectionMultiplication)
-  // TODO UDT fields (selectionGroupWithField)
-  // TODO collection elements (selectionList, selectionMapOrSet)
-  // TODO collection sub-ranges (collectionSubSelection)
-  // TODO casting (selectionTypeHint)
-  // TODO tuples (selectionTupleOrNestedSelector)
-  // TODO function calls (selectionFunction)
-  // TODO literals (can probably skip that one, edge-case + easily covered with raw())
-
-  /**
-   * Selects an arbitrary expression expressed as a raw string.
-   *
-   * <p>The contents be appended to the query as-is, without any syntax checking or escaping. This
-   * method should be used with caution, as it's possible to generate invalid CQL that will fail at
-   * execution time; on the other hand, it can be used as an "escape hatch" to handle edge cases
-   * that are not covered by the query builder.
-   */
-  static Selector raw(String rawExpression) {
-    return new RawSelector(rawExpression);
-  }
+public interface Selector extends CqlSnippet {
 
   /** Aliases the selector, as in {@code SELECT count(*) AS total}. */
   Selector as(CqlIdentifier alias);
@@ -73,6 +28,4 @@ public interface Selector {
   default Selector as(String alias) {
     return as(CqlIdentifier.fromCql(alias));
   }
-
-  String asCql(boolean pretty);
 }
