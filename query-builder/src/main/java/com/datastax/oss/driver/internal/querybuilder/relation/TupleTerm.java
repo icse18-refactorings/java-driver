@@ -19,9 +19,9 @@ import com.datastax.oss.driver.api.querybuilder.relation.Term;
 
 public class TupleTerm implements Term {
 
-  private final Iterable<Term> components;
+  private final Iterable<? extends Term> components;
 
-  public TupleTerm(Iterable<Term> components) {
+  public TupleTerm(Iterable<? extends Term> components) {
     this.components = components;
   }
 
@@ -40,7 +40,7 @@ public class TupleTerm implements Term {
     return builder.append(")").toString();
   }
 
-  public Iterable<Term> getComponents() {
+  public Iterable<? extends Term> getComponents() {
     return components;
   }
 }

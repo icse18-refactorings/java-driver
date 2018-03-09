@@ -16,20 +16,22 @@
 package com.datastax.oss.driver.internal.querybuilder.relation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.querybuilder.relation.Term;
+import com.datastax.oss.driver.internal.querybuilder.Joiners;
 
-public class ColumnComponentLeftHandSide implements LeftHandSide {
+public class TupleLeftHandSide implements LeftHandSide {
 
-  private final CqlIdentifier columnId;
-  private final Term index;
+  private final Iterable<CqlIdentifier> identifiers;
 
-  public ColumnComponentLeftHandSide(CqlIdentifier columnId, Term index) {
-    this.columnId = columnId;
-    this.index = index;
+  public TupleLeftHandSide(Iterable<CqlIdentifier> identifiers) {
+    this.identifiers = identifiers;
   }
 
   @Override
   public String asCql(boolean pretty) {
-    return columnId.asCql(pretty) + "[" + index.asCql(pretty) + "]";
+    return "(" + Joiners.joinWithComma(identifiers, pretty) + ")";
+  }
+
+  public Iterable<CqlIdentifier> getIdentifiers() {
+    return identifiers;
   }
 }

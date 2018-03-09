@@ -17,6 +17,7 @@ package com.datastax.oss.driver.api.querybuilder.relation;
 
 import com.datastax.oss.driver.internal.querybuilder.relation.RawTerm;
 import com.datastax.oss.driver.internal.querybuilder.relation.TupleTerm;
+import java.util.Arrays;
 
 public interface Term {
 
@@ -30,8 +31,13 @@ public interface Term {
     return new RawTerm(raw);
   }
 
-  static Term tuple(Iterable<Term> components) {
+  static Term tuple(Iterable<? extends Term> components) {
     return new TupleTerm(components);
+  }
+
+  /** Var-arg equivalent of {@link #tuple(Iterable)}. */
+  static Term tuple(Term... components) {
+    return tuple(Arrays.asList(components));
   }
 
   String asCql(boolean pretty);

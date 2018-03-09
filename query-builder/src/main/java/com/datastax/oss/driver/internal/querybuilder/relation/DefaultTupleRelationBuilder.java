@@ -16,20 +16,24 @@
 package com.datastax.oss.driver.internal.querybuilder.relation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.querybuilder.relation.Relation;
 import com.datastax.oss.driver.api.querybuilder.relation.Term;
+import com.datastax.oss.driver.api.querybuilder.relation.TupleRelationBuilder;
+import com.google.common.base.Preconditions;
 
-public class ColumnComponentLeftHandSide implements LeftHandSide {
+public class DefaultTupleRelationBuilder implements TupleRelationBuilder {
 
-  private final CqlIdentifier columnId;
-  private final Term index;
+  private final Iterable<CqlIdentifier> identifiers;
 
-  public ColumnComponentLeftHandSide(CqlIdentifier columnId, Term index) {
-    this.columnId = columnId;
-    this.index = index;
+  public DefaultTupleRelationBuilder(Iterable<CqlIdentifier> identifiers) {
+    Preconditions.checkNotNull(identifiers);
+    Preconditions.checkArgument(
+        identifiers.iterator().hasNext(), "Tuple must contain at least one column");
+    this.identifiers = identifiers;
   }
 
   @Override
-  public String asCql(boolean pretty) {
-    return columnId.asCql(pretty) + "[" + index.asCql(pretty) + "]";
+  public Relation build(String operator, Term rightHandSide) {
+    return new DefaultRelation(new TupleLeftHandSide(identifiers), operator, rightHandSide);
   }
 }

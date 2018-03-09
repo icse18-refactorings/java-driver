@@ -16,8 +16,7 @@
 package com.datastax.oss.driver.internal.querybuilder.relation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
+import com.datastax.oss.driver.internal.querybuilder.Joiners;
 
 public class TokenLeftHandSide implements LeftHandSide {
 
@@ -29,8 +28,10 @@ public class TokenLeftHandSide implements LeftHandSide {
 
   @Override
   public String asCql(boolean pretty) {
-    return "token("
-        + Joiner.on(",").join(Iterables.transform(identifiers, i -> i.asCql(pretty)))
-        + ")";
+    return "token(" + Joiners.joinWithComma(identifiers, pretty) + ")";
+  }
+
+  public Iterable<CqlIdentifier> getIdentifiers() {
+    return identifiers;
   }
 }

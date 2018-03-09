@@ -16,9 +16,11 @@
 package com.datastax.oss.driver.api.querybuilder.relation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.internal.querybuilder.relation.CustomIndexRelation;
 import com.datastax.oss.driver.internal.querybuilder.relation.DefaultColumnComponentRelationBuilder;
 import com.datastax.oss.driver.internal.querybuilder.relation.DefaultColumnRelationBuilder;
 import com.datastax.oss.driver.internal.querybuilder.relation.DefaultTokenRelationBuilder;
+import com.datastax.oss.driver.internal.querybuilder.relation.DefaultTupleRelationBuilder;
 import com.datastax.oss.driver.internal.querybuilder.relation.RawRelation;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;
@@ -83,9 +85,41 @@ public interface Relation {
     return isToken(Arrays.asList(names));
   }
 
-  // TODO add remaining selectors (decide how far we go without having to resort to isRaw())
-  // TODO customIndexExpression (probably fine with isRaw)
-  // TODO tupleOfIdentifiers (see 9th branch of relation in grammar)
+  /** Builds a relation testing a set of columns, as in {@code WHERE (c1, c2, c3) IN ...}. */
+  static TupleRelationBuilder isTupleOfIds(Iterable<CqlIdentifier> identifiers) {
+    return new DefaultTupleRelationBuilder(identifiers);
+  }
+
+  /** Var-arg equivalent of {@link #isTupleOfIds(Iterable)}. */
+  static TupleRelationBuilder isTuple(CqlIdentifier... identifiers) {
+    return isTupleOfIds(Arrays.asList(identifiers));
+  }
+
+  /**
+   * Equivalent of {@link #isTupleOfIds(Iterable)} with raw strings; the names are converted with
+   * {@link CqlIdentifier#fromCql(String)}.
+   */
+  static TupleRelationBuilder isTuple(Iterable<String> names) {
+    return isTupleOfIds(Iterables.transform(names, CqlIdentifier::fromCql));
+  }
+
+  /** Var-arg equivalent of {@link #isTuple(Iterable)}. */
+  static TupleRelationBuilder isTuple(String... names) {
+    return isTuple(Arrays.asList(names));
+  }
+
+  /** Builds a relation on a custom index. */
+  static Relation isCustomIndex(CqlIdentifier indexId, Term expression) {
+    return new CustomIndexRelation(indexId, expression);
+  }
+
+  /**
+   * Shortcut for {@link #isCustomIndex(CqlIdentifier, Term)
+   * isCustomIndex(CqlIdentifier.fromCql(indexName), expression)}
+   */
+  static Relation isCustomIndex(String indexName, Term expression) {
+    return isCustomIndex(CqlIdentifier.fromCql(indexName), expression);
+  }
 
   /**
    * Builds an arbitrary relation from a raw string.

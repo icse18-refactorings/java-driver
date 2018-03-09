@@ -59,7 +59,7 @@ public interface ArithmeticRelationBuilder {
    * <p>Use one of the static factory method in {@link Term} to create the argument.
    */
   default Relation gte(Term rightHandSide) {
-    return build(">", rightHandSide);
+    return build(">=", rightHandSide);
   }
 
   /**

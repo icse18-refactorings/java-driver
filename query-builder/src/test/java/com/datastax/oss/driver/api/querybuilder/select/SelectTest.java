@@ -20,8 +20,12 @@ import static com.datastax.oss.driver.api.querybuilder.BindMarker.bindMarker;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.selectFrom;
 import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isColumn;
 import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isColumnComponent;
+import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isCustomIndex;
+import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isRaw;
 import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isToken;
+import static com.datastax.oss.driver.api.querybuilder.relation.Relation.isTuple;
 import static com.datastax.oss.driver.api.querybuilder.relation.Term.rawTerm;
+import static com.datastax.oss.driver.api.querybuilder.relation.Term.tuple;
 import static com.datastax.oss.driver.api.querybuilder.select.Selector.all;
 import static com.datastax.oss.driver.api.querybuilder.select.Selector.column;
 import static com.datastax.oss.driver.api.querybuilder.select.Selector.raw;
@@ -123,6 +127,82 @@ public class SelectTest {
                     isColumn("id").eq(bindMarker()),
                     isColumnComponent("user", rawTerm("'name'")).eq(bindMarker())))
         .hasUglyCql("SELECT * FROM \"foo\" WHERE \"id\" = ? AND \"user\"['name'] = ?");
+  }
+
+  @Test
+  public void should_generate_tuple_relation() {
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isTuple("c1", "c2", "c3").in(bindMarker())))
+        .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") IN ?");
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isTuple("c1", "c2", "c3").in(tuple(bindMarker(), bindMarker()))))
+        .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") IN (?,?)");
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isTuple("c1", "c2", "c3").in(tuple(bindMarker(), rawTerm("(4,5,6)")))))
+        .hasUglyCql(
+            "SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") IN (?,(4,5,6))");
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(
+                    isTuple("c1", "c2", "c3")
+                        .in(
+                            tuple(
+                                tuple(bindMarker(), bindMarker(), bindMarker()),
+                                tuple(bindMarker(), bindMarker(), bindMarker())))))
+        .hasUglyCql(
+            "SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") IN ((?,?,?),(?,?,?))");
+
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isTuple("c1", "c2", "c3").eq(bindMarker())))
+        .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") = ?");
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(
+                    isTuple("c1", "c2", "c3").lt(tuple(bindMarker(), bindMarker(), bindMarker()))))
+        .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") < (?,?,?)");
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isTuple("c1", "c2", "c3").gte(rawTerm("(1,2,3)"))))
+        .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND (\"c1\",\"c2\",\"c3\") >= (1,2,3)");
+  }
+
+  @Test
+  public void should_generate_custom_index_relation() {
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isCustomIndex("my_index", rawTerm("'custom expression'"))))
+        .hasUglyCql(
+            "SELECT * FROM \"foo\" WHERE \"k\" = ? AND expr(\"my_index\",'custom expression')");
+  }
+
+  @Test
+  public void should_generate_raw_relation() {
+    assertThat(
+            selectFrom("foo")
+                .all()
+                .where(isColumn("k").eq(bindMarker()))
+                .where(isRaw("c = 'test'")))
+        .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND c = 'test'");
   }
 
   @Test

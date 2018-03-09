@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.datastax.oss.driver.internal.querybuilder.relation;
+package com.datastax.oss.driver.internal.querybuilder;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.querybuilder.relation.Term;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 
-public class ColumnComponentLeftHandSide implements LeftHandSide {
+public class Joiners {
 
-  private final CqlIdentifier columnId;
-  private final Term index;
+  private static final Joiner WITH_COMMA = Joiner.on(',');
 
-  public ColumnComponentLeftHandSide(CqlIdentifier columnId, Term index) {
-    this.columnId = columnId;
-    this.index = index;
-  }
-
-  @Override
-  public String asCql(boolean pretty) {
-    return columnId.asCql(pretty) + "[" + index.asCql(pretty) + "]";
+  public static String joinWithComma(Iterable<CqlIdentifier> identifiers, boolean pretty) {
+    return Joiner.on(",").join(Iterables.transform(identifiers, i -> i.asCql(pretty)));
   }
 }

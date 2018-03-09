@@ -29,4 +29,8 @@ public class ColumnLeftHandSide implements LeftHandSide {
   public String asCql(boolean pretty) {
     return columnId.asCql(pretty);
   }
+
+  public CqlIdentifier getColumnId() {
+    return columnId;
+  }
 }
