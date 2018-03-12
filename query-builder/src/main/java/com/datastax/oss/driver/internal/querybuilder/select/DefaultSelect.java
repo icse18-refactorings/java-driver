@@ -87,6 +87,7 @@ public class DefaultSelect implements SelectFrom, Select {
         keyspace, table, isJson, true, selectors, relations, limit, allowsFiltering);
   }
 
+  @Override
   public Select selector(Selector selector) {
     ImmutableList<Selector> newSelectors;
     if (selector == AllSelector.INSTANCE) {

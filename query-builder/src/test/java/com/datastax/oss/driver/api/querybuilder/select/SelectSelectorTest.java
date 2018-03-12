@@ -18,6 +18,7 @@ package com.datastax.oss.driver.api.querybuilder.select;
 import static com.datastax.oss.driver.api.querybuilder.Assertions.assertThat;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getAll;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getColumn;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getField;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getOpposite;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getRaw;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getSum;
@@ -73,6 +74,14 @@ public class SelectSelectorTest {
             selectFrom("foo")
                 .product(getOpposite(getColumn("bar")), getSum(getColumn("baz"), getRaw("1"))))
         .hasUglyCql("SELECT -\"bar\" * (\"baz\" + 1) FROM \"foo\"");
+  }
+
+  @Test
+  public void should_generate_field_selectors() {
+    assertThat(selectFrom("foo").field("user", "name"))
+        .hasUglyCql("SELECT \"user\".\"name\" FROM \"foo\"");
+    assertThat(selectFrom("foo").field(getField("user", "address"), "city"))
+        .hasUglyCql("SELECT \"user\".\"address\".\"city\" FROM \"foo\"");
   }
 
   @Test

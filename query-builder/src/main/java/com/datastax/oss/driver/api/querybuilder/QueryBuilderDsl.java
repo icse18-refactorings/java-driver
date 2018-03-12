@@ -39,6 +39,7 @@ import com.datastax.oss.driver.internal.querybuilder.select.ColumnSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.CountAllSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.DefaultBindMarker;
 import com.datastax.oss.driver.internal.querybuilder.select.DefaultSelect;
+import com.datastax.oss.driver.internal.querybuilder.select.FieldSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.OppositeSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.RawSelector;
 import com.google.common.collect.Iterables;
@@ -159,8 +160,36 @@ public interface QueryBuilderDsl {
     return new OppositeSelector(argument);
   }
 
+  /** Selects a field inside of a UDT column, as in {@code SELECT user.name}. */
+  static Selector getField(Selector udt, CqlIdentifier fieldId) {
+    return new FieldSelector(udt, fieldId);
+  }
+
+  /**
+   * Shortcut for {@link #getField(Selector, CqlIdentifier) getUdtField(udt,
+   * CqlIdentifier.fromCql(fieldName))}.
+   */
+  static Selector getField(Selector udt, String fieldName) {
+    return getField(udt, CqlIdentifier.fromCql(fieldName));
+  }
+
+  /**
+   * Shortcut to select a UDT field when the UDT is a simple column (as opposed to a more complex
+   * selection, like a nested UDT).
+   */
+  static Selector getField(CqlIdentifier udtColumnId, CqlIdentifier fieldId) {
+    return getField(getColumn(udtColumnId), fieldId);
+  }
+
+  /**
+   * Shortcut for {@link #getField(CqlIdentifier, CqlIdentifier)
+   * getField(CqlIdentifier.fromCql(udtColumnName), CqlIdentifier.fromCql(fieldName))}.
+   */
+  static Selector getField(String udtColumnName, String fieldName) {
+    return getField(CqlIdentifier.fromCql(udtColumnName), CqlIdentifier.fromCql(fieldName));
+  }
+
   // TODO add remaining selectors (decide how far we go without having to resort to getRaw)
-  // TODO UDT fields (selectionGroupWithField)
   // TODO groups of selectors as collections (selectionList, selectionMapOrSet)
   // TODO collection sub-ranges (collectionSubSelection)
   // TODO casting (selectionTypeHint)

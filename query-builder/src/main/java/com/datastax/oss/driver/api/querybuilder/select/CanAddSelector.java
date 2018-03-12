@@ -193,9 +193,46 @@ public interface CanAddSelector {
    * <p>The argument will be parenthesized if it is an instance of {@link QueryBuilderDsl#getSum} or
    * {@link QueryBuilderDsl#getDifference}. If it is a raw selector, you might have to parenthesize
    * it yourself.
+   *
+   * @see QueryBuilderDsl#getOpposite(Selector)
    */
   default Select opposite(Selector argument) {
     return selector(QueryBuilderDsl.getOpposite(argument));
+  }
+
+  /**
+   * Selects a field inside of a UDT column, as in {@code SELECT user.name}.
+   *
+   * @see QueryBuilderDsl#getField(Selector, CqlIdentifier)
+   */
+  default Select field(Selector udt, CqlIdentifier fieldId) {
+    return selector(QueryBuilderDsl.getField(udt, fieldId));
+  }
+
+  /**
+   * Shortcut for {@link #field(Selector, CqlIdentifier) field(udt,
+   * CqlIdentifier.fromCql(fieldName))}.
+   */
+  default Select field(Selector udt, String fieldName) {
+    return field(udt, CqlIdentifier.fromCql(fieldName));
+  }
+
+  /**
+   * Shortcut to select a UDT field when the UDT is a simple column (as opposed to a more complex
+   * selection, like a nested UDT).
+   *
+   * @see QueryBuilderDsl#getField(CqlIdentifier, CqlIdentifier)
+   */
+  default Select field(CqlIdentifier udtColumnId, CqlIdentifier fieldId) {
+    return selector(QueryBuilderDsl.getField(udtColumnId, fieldId));
+  }
+
+  /**
+   * Shortcut for {@link #field(CqlIdentifier, CqlIdentifier)
+   * field(CqlIdentifier.fromCql(udtColumnName), CqlIdentifier.fromCql(fieldName))}.
+   */
+  default Select field(String udtColumnName, String fieldName) {
+    return selector(QueryBuilderDsl.getField(udtColumnName, fieldName));
   }
 
   /**
