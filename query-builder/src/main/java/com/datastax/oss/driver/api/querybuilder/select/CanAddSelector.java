@@ -63,24 +63,139 @@ public interface CanAddSelector {
    *
    * <p>This will clear any previously configured selector. Similarly, if any other selector is
    * added later, it will cancel this one.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector) selector(QueryBuilderDsl.getAll())}.
+   *
+   * @see QueryBuilderDsl#getAll()
    */
   default Select all() {
     return selector(QueryBuilderDsl.getAll());
   }
 
-  /** Selects the count of all returned rows, as in {@code SELECT count(*)}. */
+  /**
+   * Selects the count of all returned rows, as in {@code SELECT count(*)}.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector) selector(QueryBuilderDsl.getCountAll())}.
+   *
+   * @see QueryBuilderDsl#getCountAll()
+   */
   default Select countAll() {
     return selector(QueryBuilderDsl.getCountAll());
   }
 
-  /** Selects a particular column by its CQL identifier. */
+  /**
+   * Selects a particular column by its CQL identifier.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector)
+   * selector(QueryBuilderDsl.getColumn(columnId))}.
+   *
+   * @see QueryBuilderDsl#getColumn(CqlIdentifier)
+   */
   default Select column(CqlIdentifier columnId) {
     return selector(QueryBuilderDsl.getColumn(columnId));
   }
 
-  /** Shortcut for {@link #column(CqlIdentifier) getColumn(CqlIdentifier.fromCql(columnName))} */
+  /** Shortcut for {@link #column(CqlIdentifier) column(CqlIdentifier.fromCql(columnName))} */
   default Select column(String columnName) {
     return column(CqlIdentifier.fromCql(columnName));
+  }
+
+  /**
+   * Selects the sum of two terms, as in {@code SELECT col1 + col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector) selector(QueryBuilderDsl.getSum(left,
+   * right))}.
+   *
+   * @see QueryBuilderDsl#getSum(Selector, Selector)
+   */
+  default Select sum(Selector left, Selector right) {
+    return selector(QueryBuilderDsl.getSum(left, right));
+  }
+
+  /**
+   * Selects the difference of two terms, as in {@code SELECT col1 - col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector)
+   * selector(QueryBuilderDsl.getDifference(left, right))}.
+   *
+   * @see QueryBuilderDsl#getDifference(Selector, Selector)
+   */
+  default Select difference(Selector left, Selector right) {
+    return selector(QueryBuilderDsl.getDifference(left, right));
+  }
+
+  /**
+   * Selects the product of two terms, as in {@code SELECT col1 * col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector) selector(QueryBuilderDsl.getProduct(left,
+   * right))}.
+   *
+   * <p>The arguments will be parenthesized if they are instances of {@link QueryBuilderDsl#getSum}
+   * or {@link QueryBuilderDsl#getDifference}. If they are raw selectors, you might have to
+   * parenthesize them yourself.
+   *
+   * @see QueryBuilderDsl#getProduct(Selector, Selector)
+   */
+  default Select product(Selector left, Selector right) {
+    return selector(QueryBuilderDsl.getProduct(left, right));
+  }
+
+  /**
+   * Selects the divider of two terms, as in {@code SELECT col1 / col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector) selector(QueryBuilderDsl.getDivider(left,
+   * right))}.
+   *
+   * <p>The arguments will be parenthesized if they are instances of {@link QueryBuilderDsl#getSum}
+   * or {@link QueryBuilderDsl#getDifference}. If they are raw selectors, you might have to
+   * parenthesize them yourself.
+   *
+   * @see QueryBuilderDsl#getDivider(Selector, Selector)
+   */
+  default Select divider(Selector left, Selector right) {
+    return selector(QueryBuilderDsl.getDivider(left, right));
+  }
+
+  /**
+   * Selects the remainder of two terms, as in {@code SELECT col1 % col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector)
+   * selector(QueryBuilderDsl.getRemainder(left, right))}.
+   *
+   * <p>The arguments will be parenthesized if they are instances of {@link QueryBuilderDsl#getSum}
+   * or {@link QueryBuilderDsl#getDifference}. If they are raw selectors, you might have to
+   * parenthesize them yourself.
+   *
+   * @see QueryBuilderDsl#getRemainder(Selector, Selector)
+   */
+  default Select remainder(Selector left, Selector right) {
+    return selector(QueryBuilderDsl.getRemainder(left, right));
+  }
+
+  /**
+   * Selects the opposite of a term, as in {@code SELECT -col1}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector)
+   * selector(QueryBuilderDsl.getOpposite(argument))}.
+   *
+   * <p>The argument will be parenthesized if it is an instance of {@link QueryBuilderDsl#getSum} or
+   * {@link QueryBuilderDsl#getDifference}. If it is a raw selector, you might have to parenthesize
+   * it yourself.
+   */
+  default Select opposite(Selector argument) {
+    return selector(QueryBuilderDsl.getOpposite(argument));
   }
 
   /**
@@ -90,6 +205,9 @@ public interface CanAddSelector {
    * This method should be used with caution, as it's possible to generate invalid CQL that will
    * fail at execution time; on the other hand, it can be used as a workaround to handle new CQL
    * features that are not yet covered by the query builder.
+   *
+   * <p>This is a shortcut for {@link #selector(Selector)
+   * selector(QueryBuilderDsl.getRaw(rawExpression))}.
    */
   default Select raw(String rawExpression) {
     return selector(QueryBuilderDsl.getRaw(rawExpression));

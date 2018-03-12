@@ -13,9 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.datastax.oss.driver.api.querybuilder;
+package com.datastax.oss.driver.internal.querybuilder.select;
 
-/** An element in the query builder DSL, that will generate part of a CQL query. */
-public interface CqlSnippet {
-  String asCql(boolean pretty);
+public enum ArithmeticOperator {
+  OPPOSITE("-", 2),
+  PRODUCT("*", 2),
+  DIVIDER("/", 2),
+  REMAINDER("%", 2),
+  SUM("+", 1),
+  DIFFERENCE("-", 1),
+  ;
+
+  private final String symbol;
+  private final int precedence;
+
+  ArithmeticOperator(String symbol, int precedence) {
+    this.symbol = symbol;
+    this.precedence = precedence;
+  }
+
+  public String getSymbol() {
+    return symbol;
+  }
+
+  public int getPrecedence() {
+    return precedence;
+  }
 }

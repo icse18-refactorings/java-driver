@@ -17,9 +17,6 @@ package com.datastax.oss.driver.api.querybuilder.select;
 
 import static com.datastax.oss.driver.api.querybuilder.Assertions.assertThat;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.bindMarker;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getAll;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getColumn;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.getRaw;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isColumn;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isColumnComponent;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.isCustomIndex;
@@ -32,63 +29,7 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilderDsl.tuple;
 
 import org.junit.Test;
 
-public class SelectTest {
-
-  @Test
-  public void should_generate_selectors() {
-    assertThat(selectFrom("foo").all()).hasUglyCql("SELECT * FROM \"foo\"");
-    assertThat(selectFrom("foo").countAll()).hasUglyCql("SELECT count(*) FROM \"foo\"");
-    assertThat(selectFrom("foo").column("bar")).hasUglyCql("SELECT \"bar\" FROM \"foo\"");
-    assertThat(selectFrom("foo").raw("a,b,c")).hasUglyCql("SELECT a,b,c FROM \"foo\"");
-
-    assertThat(selectFrom("foo").column("bar").column("baz"))
-        .hasUglyCql("SELECT \"bar\", \"baz\" FROM \"foo\"");
-
-    assertThat(selectFrom("foo").selectors(getColumn("bar"), getColumn("baz")))
-        .hasUglyCql("SELECT \"bar\", \"baz\" FROM \"foo\"");
-    assertThat(selectFrom("foo").selectors(getColumn("bar"), getRaw("baz")))
-        .hasUglyCql("SELECT \"bar\", baz FROM \"foo\"");
-  }
-
-  @Test
-  public void should_remove_star_selector_if_other_selector_added() {
-    assertThat(selectFrom("foo").all().column("bar")).hasUglyCql("SELECT \"bar\" FROM \"foo\"");
-  }
-
-  @Test
-  public void should_remove_other_selectors_if_star_selector_added() {
-    assertThat(selectFrom("foo").column("bar").column("baz").all())
-        .hasUglyCql("SELECT * FROM \"foo\"");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void should_fail_if_selector_list_contains_star_selector() {
-    selectFrom("foo").selectors(getColumn("bar"), getAll(), getRaw("baz"));
-  }
-
-  @Test
-  public void should_alias_selectors() {
-    assertThat(selectFrom("foo").column("bar").as("baz"))
-        .hasUglyCql("SELECT \"bar\" AS \"baz\" FROM \"foo\"");
-    assertThat(selectFrom("foo").selectors(getColumn("bar").as("c1"), getColumn("baz").as("c2")))
-        .hasUglyCql("SELECT \"bar\" AS \"c1\", \"baz\" AS \"c2\" FROM \"foo\"");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void should_fail_to_alias_star_selector() {
-    selectFrom("foo").all().as("allthethings");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void should_fail_to_alias_if_no_selector_yet() {
-    selectFrom("foo").as("bar");
-  }
-
-  @Test
-  public void should_keep_last_alias_if_aliased_twice() {
-    assertThat(selectFrom("foo").countAll().as("allthethings").as("total"))
-        .hasUglyCql("SELECT count(*) AS \"total\" FROM \"foo\"");
-  }
+public class SelectRelationTest {
 
   @Test
   public void should_generate_comparison_relation() {
@@ -203,30 +144,5 @@ public class SelectTest {
                 .where(isColumn("k").eq(bindMarker()))
                 .where(isRaw("c = 'test'")))
         .hasUglyCql("SELECT * FROM \"foo\" WHERE \"k\" = ? AND c = 'test'");
-  }
-
-  @Test
-  public void should_generate_limit() {
-    assertThat(selectFrom("foo").all().limit(1)).hasUglyCql("SELECT * FROM \"foo\" LIMIT 1");
-    assertThat(selectFrom("foo").all().limit(bindMarker("l")))
-        .hasUglyCql("SELECT * FROM \"foo\" LIMIT :\"l\"");
-  }
-
-  @Test
-  public void should_use_last_limit_if_called_multiple_times() {
-    assertThat(selectFrom("foo").all().limit(1).limit(2))
-        .hasUglyCql("SELECT * FROM \"foo\" LIMIT 2");
-  }
-
-  @Test
-  public void should_generate_allow_filtering() {
-    assertThat(selectFrom("foo").all().allowFiltering())
-        .hasUglyCql("SELECT * FROM \"foo\" ALLOW FILTERING");
-  }
-
-  @Test
-  public void should_use_single_allow_filtering_if_called_multiple_times() {
-    assertThat(selectFrom("foo").all().allowFiltering().allowFiltering())
-        .hasUglyCql("SELECT * FROM \"foo\" ALLOW FILTERING");
   }
 }

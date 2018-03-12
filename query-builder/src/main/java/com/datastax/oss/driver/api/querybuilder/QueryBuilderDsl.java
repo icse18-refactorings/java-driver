@@ -33,10 +33,13 @@ import com.datastax.oss.driver.internal.querybuilder.relation.RawRelation;
 import com.datastax.oss.driver.internal.querybuilder.relation.RawTerm;
 import com.datastax.oss.driver.internal.querybuilder.relation.TupleTerm;
 import com.datastax.oss.driver.internal.querybuilder.select.AllSelector;
+import com.datastax.oss.driver.internal.querybuilder.select.ArithmeticOperator;
+import com.datastax.oss.driver.internal.querybuilder.select.BinaryArithmeticSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.ColumnSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.CountAllSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.DefaultBindMarker;
 import com.datastax.oss.driver.internal.querybuilder.select.DefaultSelect;
+import com.datastax.oss.driver.internal.querybuilder.select.OppositeSelector;
 import com.datastax.oss.driver.internal.querybuilder.select.RawSelector;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;
@@ -90,10 +93,75 @@ public interface QueryBuilderDsl {
     return getColumn(CqlIdentifier.fromCql(columnName));
   }
 
+  /**
+   * Selects the sum of two terms, as in {@code SELECT col1 + col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   */
+  static Selector getSum(Selector left, Selector right) {
+    return new BinaryArithmeticSelector(ArithmeticOperator.SUM, left, right);
+  }
+
+  /**
+   * Selects the difference of two terms, as in {@code SELECT col1 - col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   */
+  static Selector getDifference(Selector left, Selector right) {
+    return new BinaryArithmeticSelector(ArithmeticOperator.DIFFERENCE, left, right);
+  }
+
+  /**
+   * Selects the product of two terms, as in {@code SELECT col1 * col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>The arguments will be parenthesized if they are instances of {@link #getSum} or {@link
+   * #getDifference}. If they are raw selectors, you might have to parenthesize them yourself.
+   */
+  static Selector getProduct(Selector left, Selector right) {
+    return new BinaryArithmeticSelector(ArithmeticOperator.PRODUCT, left, right);
+  }
+
+  /**
+   * Selects the divider of two terms, as in {@code SELECT col1 / col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>The arguments will be parenthesized if they are instances of {@link #getSum} or {@link
+   * #getDifference}. If they are raw selectors, you might have to parenthesize them yourself.
+   */
+  static Selector getDivider(Selector left, Selector right) {
+    return new BinaryArithmeticSelector(ArithmeticOperator.DIVIDER, left, right);
+  }
+
+  /**
+   * Selects the remainder of two terms, as in {@code SELECT col1 % col2}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>The arguments will be parenthesized if they are instances of {@link #getSum} or {@link
+   * #getDifference}. If they are raw selectors, you might have to parenthesize them yourself.
+   */
+  static Selector getRemainder(Selector left, Selector right) {
+    return new BinaryArithmeticSelector(ArithmeticOperator.REMAINDER, left, right);
+  }
+
+  /**
+   * Selects the opposite of a term, as in {@code SELECT -col1}.
+   *
+   * <p>This is available in Cassandra 4 and above.
+   *
+   * <p>The argument will be parenthesized if it is an instance of {@link #getSum} or {@link
+   * #getDifference}. If it is a raw selector, you might have to parenthesize it yourself.
+   */
+  static Selector getOpposite(Selector argument) {
+    return new OppositeSelector(argument);
+  }
+
   // TODO add remaining selectors (decide how far we go without having to resort to getRaw)
-  // TODO arithmetic expressions (selectionAddition, selectionMultiplication)
   // TODO UDT fields (selectionGroupWithField)
-  // TODO collection elements (selectionList, selectionMapOrSet)
+  // TODO groups of selectors as collections (selectionList, selectionMapOrSet)
   // TODO collection sub-ranges (collectionSubSelection)
   // TODO casting (selectionTypeHint)
   // TODO tuples (selectionTupleOrNestedSelector)
